@@ -4,7 +4,7 @@ A mod for the game PlateUp! that makes it so that Smart Grabber's trained items 
 
 Install using [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2932832938)
 
-![screenshot.png](TrainInPracticeModeOnly/screenshot.png)
+![screenshot.png](screenshot.png)
 
 ## Example Scenario
 1. You train a smart grabber to pull cooked turkey off of a hob.
