@@ -23,7 +23,3 @@ Install using [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetail
 ### Tips
 - [EnhancementMod](https://steamcommunity.com/sharedfiles/filedetails/?id=2908609256) is useful for creating specific scenarios in-game easily for testing (for example, spawning smart grabbers)
 - [NoClip](https://github.com/Tremolo4/plateup-mods) is a simple mod that does not depend on KitchenLib or Harmony and is a good starter template. I used this as reference for this mod.
-
-
-### Known Bugs
-- If different item is placed on smart grabber during the day, the shown trained item does not change, but the grabber will not pull any item until you put the original item on the grabber.

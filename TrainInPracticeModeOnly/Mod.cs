@@ -14,53 +14,54 @@ namespace TrainInPracticeModeOnly
         // Query that gets all cAppliance
         private EntityQuery Appliances;
 
-        // Maps SmartGrabber CAppliance's to the item ID that they are trained to
-        private Dictionary<CAppliance, int> GrabberToTrainedItemId;
+        // SpecificType is an item ID on the CConveyPushItems component that represents the item the smart grabber is trained to grab.
+        // Both SpecificType and SpecificComponents MUST be set in order to fully CHANGE the trained item of a grabber.
+        private Dictionary<CAppliance, (int SpecificType, KitchenData.ItemList SpecificComponents)> GrabberToTrainedItemInfo;
 
         protected override void Initialise()
         {
             base.Initialise();
             Appliances = GetEntityQuery(new QueryHelper()
                     .All(typeof(CAppliance)));
-            GrabberToTrainedItemId = new Dictionary<CAppliance, int>();
+            GrabberToTrainedItemInfo = new Dictionary<CAppliance, (int SpecificType, KitchenData.ItemList SpecificComponents)>();
         }
 
-        
+        private void Log(string message)
+        {
+            Debug.Log($"TrainInPracticeModeOnly: {message}");
+        }
+
+
         // Ensure that each SmartGrabber is trained to the item that it was trained to when we last locked the trained items.
         private void UpdateTrainedItems(bool isLocked)
         {
             var appliances = Appliances.ToEntityArray(Allocator.TempJob);
             foreach (var appliance in appliances)
             {
-
-                // Ensure this is an appliance
-                if (!Require(appliance, out CAppliance cAppliance))
-                {
-                    continue;
-                }
-
                 // Ensure this is a smart grabber
-                if (cAppliance.ID.Equals(SmartGrabberItemId))
+                if (Require(appliance, out CAppliance cAppliance) && cAppliance.ID.Equals(SmartGrabberItemId))
                 {
                     var pushItems = EntityManager.GetComponentData<CConveyPushItems>(appliance);
 
                     // Override the current trained item with locked item when they are different, i.e. do not allow the user to update the trained item.
                     if (isLocked)
                     {
-                        if (GrabberToTrainedItemId.ContainsKey(cAppliance) && !GrabberToTrainedItemId[cAppliance].Equals(pushItems.SpecificType))
+                        if (GrabberToTrainedItemInfo.ContainsKey(cAppliance) && !GrabberToTrainedItemInfo[cAppliance].SpecificType.Equals(pushItems.SpecificType))
                         {
-                            Debug.Log($"TrainOnlyInSetup: Updating trained item  {pushItems.SpecificType} to {GrabberToTrainedItemId[cAppliance]}");
-                            pushItems.SpecificType = GrabberToTrainedItemId[cAppliance];
+                            Log($"TrainOnlyInSetup: Updating trained item  {pushItems.SpecificType} to {GrabberToTrainedItemInfo[cAppliance].SpecificType}");
+                            pushItems.SpecificType = GrabberToTrainedItemInfo[cAppliance].SpecificType;
+                            pushItems.SpecificComponents = GrabberToTrainedItemInfo[cAppliance].SpecificComponents;
                             EntityManager.SetComponentData<CConveyPushItems>(appliance, pushItems);
                         }
                     }
                     // Keep the dictionary in sync with the current trained item, i.e. allow the user to update the trained item.
-                    else {
-                            if (!GrabberToTrainedItemId.ContainsKey(cAppliance) || !GrabberToTrainedItemId[cAppliance].Equals(pushItems.SpecificType))
-                            {
-                                GrabberToTrainedItemId[cAppliance] = pushItems.SpecificType;
-                                Debug.Log($"TrainOnlyInSetup: Locked Smart Grabber trained item to {pushItems.SpecificType}");
-                            }
+                    else
+                    {
+                        if (!GrabberToTrainedItemInfo.ContainsKey(cAppliance) || !GrabberToTrainedItemInfo[cAppliance].SpecificType.Equals(pushItems.SpecificType))
+                        {
+                            Log($"TrainOnlyInSetup: Locked Smart Grabber trained item to {pushItems.SpecificType}");
+                            GrabberToTrainedItemInfo[cAppliance] = (SpecificType: pushItems.SpecificType, SpecificComponents: pushItems.SpecificComponents);
+                        }
                     }
                 }
             }
@@ -69,16 +70,32 @@ namespace TrainInPracticeModeOnly
 
         protected override void OnUpdate()
         {
-            // Only unlock trained items in practice mode
-            if (GameInfo.IsPreparationTime || Has<SPracticeMode>())
+            if (Has<SIsDayTime>() && !Has<SPracticeMode>())
             {
-                UpdateTrainedItems(isLocked: false);
+                // On the first frame, lock in the trained items.
+                if (Has<SIsDayFirstUpdate>())
+                {
+                    GrabberToTrainedItemInfo.Clear();
+                    UpdateTrainedItems(isLocked: false);
+                }
+                // Every other frame, ensure the smart grabbers are always set to the locked in items.
+                else
+                {
+                    UpdateTrainedItems(isLocked: true);
+                }
             }
-            // This condition is only true during the actual game day
-            else
-            {
-                UpdateTrainedItems(isLocked: true);
-            }
+
+
+            //// Only unlock trained items in practice mode
+            //if (GameInfo.IsPreparationTime || Has<SPracticeMode>())
+            //{
+            //    UpdateTrainedItems(isLocked: false);
+            //}
+            //// This condition is only true during the actual game day
+            //else
+            //{
+            //    UpdateTrainedItems(isLocked: true);
+            //}
         }
     }
 }
