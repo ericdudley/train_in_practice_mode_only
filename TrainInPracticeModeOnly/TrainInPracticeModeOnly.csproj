@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ProjectName>TrainInPracticeModeOnly</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\plateup.targets" />
+</Project>
