@@ -2,7 +2,7 @@
 
 A mod for the game PlateUp! that makes it so that Smart Grabber's trained items can only be updated while in practice mode. This prevents accidental retraining of smart grabbers during the day, breaking automations.
 
-Install using [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2932832938)
+## Install using [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2932832938)
 
 ![screenshot.png](screenshot.png)
 
